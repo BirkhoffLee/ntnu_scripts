@@ -13,6 +13,7 @@
 ```shell
 $ git clone https://github.com/BirkhoffLee/ntnu_scripts
 $ cd ntnu_scripts
+$ npm install
 $ node index.js 40941234s password b102
 {
   type: '1',
