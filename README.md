@@ -28,4 +28,4 @@ $ node covid.js 40941234s password
 透過現有的中間人攻擊套件 [mitmproxy](https://mitmproxy.org) 對 NTNU APP 實施[中間人攻擊 (MITM Attack)](https://en.wikipedia.org/wiki/Man-in-the-middle_attack)，藉此記錄 NTNU APP 與學校伺服器交換的資訊，並使用 Node.js 實作即可
 
 # Protection
-作爲 App 的開發者，一般我們利用 [Certificate Pinning](https://security.stackexchange.com/questions/29988/what-is-certificate-pinning) 防範 MITM Attack
+作爲 App 的開發者，一般我們利用 [Certificate Pinning](https://security.stackexchange.com/a/29990) 防範 MITM Attack
