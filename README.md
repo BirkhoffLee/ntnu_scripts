@@ -1,12 +1,18 @@
 # NTNU Scripts
-一些無聊做的小東西，供大家學習  
-目前是自動防疫簽到（教室門口的 QR Code）跟 Day Pass 自動提交體溫
+一些無聊做的小玩具，非常有學習價值，供大家參考  
+牽涉到的技術比較多，而且 code 的部分因爲使用 ES7 語法會比較不容易理解，但是看關鍵字之後也很容易用 python 實作一遍
+
+# List
+* 自動防疫簽到（教室門口的 QR Code）: [index.js](index.js)
+* Day Pass 自動提交體溫: [covid.js](covid.js)
 
 # Usage
-首先你需要一個 Node.js 環境: [使用套件管理器安裝 Node.js](https://nodejs.org/zh-tw/download/package-manager/)  
-然後把學號跟密碼丟進去就 OK 了
+首先你需要一個 Node.js 環境：[使用套件管理器安裝 Node.js](https://nodejs.org/zh-tw/download/package-manager/)
+然後：
 
 ```shell
+$ git clone https://github.com/BirkhoffLee/ntnu_scripts
+$ cd ntnu_scripts
 $ node index.js 40941234s password b102
 {
   type: '1',
@@ -20,3 +26,6 @@ $ node covid.js 40941234s password
 
 # How?
 透過現有的中間人攻擊套件 [mitmproxy](https://mitmproxy.org) 對 NTNU APP 實施[中間人攻擊 (MITM Attack)](https://en.wikipedia.org/wiki/Man-in-the-middle_attack)，藉此記錄 NTNU APP 與學校伺服器交換的資訊，並使用 Node.js 實作即可
+
+# Protection
+作爲 App 的開發者，一般我們利用 [Certificate Pinning](https://security.stackexchange.com/questions/29988/what-is-certificate-pinning) 防範 MITM Attack
