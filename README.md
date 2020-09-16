@@ -7,7 +7,7 @@
 * Day Pass 自動提交體溫: [covid.js](covid.js)
 
 # Usage
-首先你需要一個 Node.js 環境：[使用套件管理器安裝 Node.js](https://nodejs.org/zh-tw/download/package-manager/)
+首先你需要一個 Node.js 環境：[使用套件管理器安裝 Node.js](https://nodejs.org/zh-tw/download/package-manager/)  
 然後：
 
 ```shell
