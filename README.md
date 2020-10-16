@@ -34,5 +34,10 @@ $ node covid.js 40941234s password
 # ntnu_5g Captive Portal Auto Login
 在 macOS 連上 SSID 爲 `ntnu_5g` 的 WiFi 之後，自動登入學校網路。
 
+Codebase largely based on https://github.com/rimar/wifi-location-changer.
+
 1. 先在 [ntnu-5g-captive-portal/ntnuwifiautologin](ntnu-5g-captive-portal/ntnuwifiautologin) 設定 username/password（NTNU SSO 學號密碼）
 2. `cd ntnu-5g-captive-portal && ./install.sh`
+3. [https://wificert2.ntnu.edu.tw:1003/logout?](https://wificert2.ntnu.edu.tw:1003/logout?)
+4. WiFi 斷開重連。
+5. `tail -f /usr/local/var/log/ntnuwifiautologin.log`

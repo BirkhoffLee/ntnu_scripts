@@ -8,7 +8,7 @@ exec &>/usr/local/var/log/ntnuwifiautologin.log
 #exec 1>/dev/null 2>/dev/null
 
 # get a little breather before we get data for things to settle down
-sleep 4
+sleep 5
 
 # get SSID
 SSID=`/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -I | awk '/ SSID:/ {print $2}'`
