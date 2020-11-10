@@ -1,21 +1,23 @@
 #!/bin/bash
 
-# redirect all IO to a logfile
-mkdir -p /usr/local/var/log
-exec &>/usr/local/var/log/ntnuwifiautologin.log
+if [ ! -t 0 ]; then
+  # redirect all IO to a logfile
+  mkdir -p /usr/local/var/log
+  exec &>/usr/local/var/log/ntnuwifiautologin.log
 
-# redirect all IO to /dev/null (comment this in if you don#t want to write to logfile)
-#exec 1>/dev/null 2>/dev/null
+  # redirect all IO to /dev/null (comment this in if you don#t want to write to logfile)
+  #exec 1>/dev/null 2>/dev/null
 
-# get a little breather before we get data for things to settle down
-sleep 5
+  # get SSID
+  SSID=`/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -I | awk '/ SSID:/ {print $2}'`
+  echo `date` "New SSID found: $SSID"
 
-# get SSID
-SSID=`/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -I | awk '/ SSID:/ {print $2}'`
-echo `date` "New SSID found: $SSID"
+  if [ "$SSID" != "ntnu_5g" ]; then
+    exit 0
+  fi
 
-if [ "$SSID" != "ntnu_5g" ]; then
-  exit 0
+  # get a little breather before we get data for things to settle down
+  sleep 3
 fi
 
 username=
@@ -25,10 +27,9 @@ echo `date` "Trying to get Firewall Login magic"
 
 a=$(curl \
   --silent \
-  --resolve wificert2.ntnu.edu.tw:140.122.131.1 \
+  --resolve wificert2.ntnu.edu.tw:1003:140.122.131.1 \
   --connect-timeout 5 \
   --max-time 10 \
-  --retry-all-errors \
   --retry 5 \
   --retry-delay 0 \
   --retry-max-time 40 \
@@ -42,14 +43,13 @@ else
 fi
 
 echo `date` "Firewall Login magic: $magic"
-echo `date` "Sending login request to wificert2.ntnu.edu.tw:1003"
+echo `date` "Sending login request"
 
 curl \
-  --resolve wificert2.ntnu.edu.tw:140.122.131.1 \
+  --resolve wificert2.ntnu.edu.tw:1003:140.122.131.1 \
   --silent \
   --connect-timeout 5 \
   --max-time 10 \
-  --retry-all-errors \
   --retry 5 \
   --retry-delay 0 \
   --retry-max-time 40 \
