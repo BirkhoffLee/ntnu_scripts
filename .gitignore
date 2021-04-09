@@ -1,1 +1,5 @@
 node_modules
+ntnu-5g-captive-portal/ntnuwifiautologin
+.vscode
+.DS_Store
+*.pyc
