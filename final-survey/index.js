@@ -35,7 +35,7 @@ const fetch = require('node-fetch');
   }
 
   // Now we login to iportalws.ntnu.edu.tw
-  await fetch('http://iportal.ntnu.edu.tw/login.do', {
+  const login = await fetch('http://iportal.ntnu.edu.tw/login.do', {
     method: 'POST',
     body: `muid=${muid}&mpassword=${mpassword}&forceMobile=pc`,
     headers: {
@@ -68,9 +68,16 @@ const fetch = require('node-fetch');
 
   const info = await ssoSignin.text()
 
+  if (info.includes("登入失敗")) {
+    console.error("登入失敗")
+    return;
+  }
+  
+  console.log("sso sign in success")
+  
   const targetUrl = RegExp("action='(.*?)'").exec(info)[1]
   const sessionId = RegExp("sessionId' value='(.*?)'").exec(info)[1]
-
+  
   const courseLogin = await fetch(targetUrl, {
     method: 'POST',
     body: `sessionId=${encodeURIComponent(sessionId)}&userid=${muid.toUpperCase()}`,
@@ -86,7 +93,9 @@ const fetch = require('node-fetch');
       'Cookie': iportalwsCookies
     }
   })
-
+  
+  const acadmYt = RegExp("var acadmYt = '(.*?)';").exec(await courseLogin.text())[1]
+  console.log(acadmYt)
   headers = courseLogin.headers.raw()
   if (headers['set-cookie'] !== undefined) {
     courseapCookies = headers['set-cookie'][0].split(";")[0]
@@ -97,7 +106,7 @@ const fetch = require('node-fetch');
 
   const coursesResponse = await fetch("https://courseap.itc.ntnu.edu.tw/acadmSecondQuesSL/inquireStdCourse.do", {
     method: 'POST',
-    body: "action=grid&schClassType=Course&termType=final&inqSysCode=&acadmYt=109_1",
+    body: "action=grid&schClassType=Course&termType=final&inqSysCode=&acadmYt=" + acadmYt,
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
       'Pragma': 'no-cache',
@@ -114,12 +123,13 @@ const fetch = require('node-fetch');
   })
 
   const coursesData = await coursesResponse.json()
-
+  
   if (coursesData.totalCount == 0) return
-
+  
   const courses = coursesData.data.filter(el => {
     return el.completeFlag === 'N'
   })
+  console.log(courses)
 
   function getCname (str) {
     return Buffer.from(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
