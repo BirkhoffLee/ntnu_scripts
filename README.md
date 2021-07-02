@@ -3,9 +3,9 @@
 # 期末問卷自動填寫
 ```
 $ git clone https://github.com/BirkhoffLee/ntnu_scripts
-$ cd ntnu_scripts/final-survey
+$ cd ntnu_scripts/scripts
 $ npm install
-$ node index.js 40941234s password
+$ node finalSurvey.js 40941234s password
 歐洲啟蒙運動中的政治與社會性
 {"msg":"已完成，老師可清楚瞭解回饋，謝謝!!","success":true}
 
@@ -64,4 +64,5 @@ Codebase largely based on https://github.com/rimar/wifi-location-changer.
 
 ## wireguard
 如果平常有在用 Wireguard 連 VPN，這裏有繞過 AS38844（NTNU）, AS17716（NTU）, AS9264（中研院）的網段的範例路由，
-這樣開著 VPN 就不會連不到 https://wificert2.ntnu.edu.tw:1003 了
+這樣開著 VPN 就不會連不到 https://wificert2.ntnu.edu.tw:1003 了  
+I suggest switching to Tailscale.
