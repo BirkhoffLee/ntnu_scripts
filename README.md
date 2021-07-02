@@ -1,14 +1,14 @@
 # NTNU Scripts
 
-* `/course/`: 選課系統 sign-in PoC
-* `/covid-sign-in/`:
+* [course/](course/): 選課系統 sign-in PoC
+* [covid-sign-in/](covid-sign-in/):
   * 自動防疫簽到（教室門口的 QR Code）: [covid-sign-in/index.js](covid-sign-in/index.js)
   * Day Pass 自動提交體溫: [covid-sign-in/covid.js](covid-sign-in/covid.js)
-* `/ntnu-5g-captive-portal/`: ntnu-5g captive portal 自動登入 on macOS
-* `/scripts/`:
-  * `/scripts/finalSurvey.mjs`: 填寫所有期末問卷
-  * `/scripts/score-monitor-example.mjs`: 檢查並發送成績更新的通知，搭配 cron 使用
-  * `/scripts/ntnu.mjs`: 學校系統 ES7 class，目前有下列。用法參考上述應用
+* [ntnu-5g-captive-portal/](ntnu-5g-captive-portal/): ntnu-5g captive portal 自動登入 on macOS
+* [scripts/](scripts/):
+  * [scripts/finalSurvey.mjs](scripts/finalSurvey.mjs): 填寫所有期末問卷
+  * [scripts/score-monitor-example.mjs](scripts/score-monitor-example.mjs): 檢查並發送成績更新的通知，搭配 cron 使用
+  * [scripts/ntnu.mjs](scripts/ntnu.mjs): 學校系統 ES7 class，目前有下列。用法參考上述應用
     * sign-in via iportal
     * sign-in via SSO
     * `inquireStdCourse`
