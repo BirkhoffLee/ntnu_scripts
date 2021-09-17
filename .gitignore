@@ -1,0 +1,7 @@
+scripts/score-monitor.mjs
+ntnu-5g-captive-portal/ntnuwifiautologin
+
+node_modules
+.vscode
+.DS_Store
+*.pyc
