@@ -1,10 +1,10 @@
 # NTNU Scripts
 
-* [course/](course/): 選課系統 sign-in PoC
+* [course/](course/): 選課系統 sign-in CAPTCHA solving PoC
 * [covid-sign-in/](covid-sign-in/):
   * 自動防疫簽到（教室門口的 QR Code）: [covid-sign-in/index.js](covid-sign-in/index.js)
   * Day Pass 自動提交體溫: [covid-sign-in/covid.js](covid-sign-in/covid.js)
-* [ntnu-5g-captive-portal/](ntnu-5g-captive-portal/): ntnu-5g captive portal 自動登入 on macOS
+* [ntnu-5g-captive-portal/](ntnu-5g-captive-portal/): ntnu-5g captive portal 自動登入 on macOS Monterey
 * [scripts/](scripts/):
   * [scripts/finalSurvey.mjs](scripts/finalSurvey.mjs): 填寫所有期末問卷
   * [scripts/score-monitor-example.mjs](scripts/score-monitor-example.mjs): 檢查並發送成績更新的通知，搭配 cron 使用
@@ -16,6 +16,7 @@
     * `getCourseScoreList`
 
 # 期末問卷填寫
+
 ```
 $ git clone https://github.com/BirkhoffLee/ntnu_scripts
 $ cd ntnu_scripts/scripts
@@ -41,12 +42,12 @@ $ node finalSurvey.js 40941234s password
 ```
 
 # ntnu_5g Captive Portal
+
 在 macOS 連上 SSID 爲 `ntnu_5g` 的 WiFi 之後，自動登入學校網路。
 
 Codebase largely based on https://github.com/rimar/wifi-location-changer.
 
-1. 先在 [ntnu-5g-captive-portal/ntnuwifiautologin](ntnu-5g-captive-portal/ntnuwifiautologin) 設定 username/password（NTNU SSO 學號密碼）
-2. `cd ntnu-5g-captive-portal && ./install.sh`
-3. [https://wificert2.ntnu.edu.tw:1003/logout?](https://wificert2.ntnu.edu.tw:1003/logout?)
-4. WiFi 斷開重連。
-5. `tail -f /usr/local/var/log/ntnuwifiautologin.log`
+1. `cd ntnu-5g-captive-portal && cp ntnuwifiautologin.example ntnuwifiautologin `
+2. 在 [ntnu-5g-captive-portal/ntnuwifiautologin](ntnu-5g-captive-portal/ntnuwifiautologin) 設定 username/password（NTNU SSO 學號密碼）
+3. `./install.sh`
+4. `tail -f /usr/local/var/log/ntnuwifiautologin.log`
