@@ -2,15 +2,48 @@
 
 username=
 password=
+consoleUser="birkhoff"
+DNS_SERVER="140.122.65.9"
 
-PATH=/sbin:/usr/bin:/usr/local/bin
+consoleUserUID=$(/usr/bin/id -u "${consoleUser}")
+PATH=/bin:/sbin:/usr/bin:/usr/local/bin:/opt/homebrew/bin
+
+notification () {
+  echo `date` "Sending notification: $2"
+  launchctl asuser "$consoleUserUID" "/opt/homebrew/bin/terminal-notifier" \
+    -sound default -message "$2" -title "$1"
+}
 
 date () {
-  '/usr/local/bin/gdate' "$@"
+  'gdate' "$@"
+}
+cat () {
+  'gcat' "$@"
 }
 sleep () {
-  '/usr/local/bin/gsleep' "$@"
+  'gsleep' "$@"
 }
+route () {
+  if [ ! -t 0 ]; then
+    '/sbin/route' "$@"
+  else
+    sudo '/sbin/route' "$@"
+  fi
+}
+
+clean_up () {
+  ARG=$?
+  route delete $DNS_SERVER/32 >/dev/null 2>&1 || true
+  route delete $CAPTIVE_RESOLVED_IP/32 >/dev/null 2>&1 || true
+  route delete $CAPTIVE_IP/32 >/dev/null 2>&1 || true
+  route delete $CAPTIVE_IP/32 >/dev/null 2>&1 || true
+  route delete $DNS_SERVER/32 >/dev/null 2>&1 || true
+  route delete $CAPTIVE_RESOLVED_IP/32 >/dev/null 2>&1 || true
+  echo `date` "Cleaned up routes. Exiting with code $ARG."
+  exit $ARG
+}
+
+trap clean_up EXIT
 
 # If this script is being run automatically
 if [ ! -t 0 ]; then
@@ -20,72 +53,94 @@ if [ ! -t 0 ]; then
     echo `date` "Not connected to ntnu_5g, skipping"
     exit 0
   fi
-  
-  # Redirect stdout to /usr/local/var/log/ntnuwifiautologin.log
-  mkdir -p /usr/local/var/log
-  exec &>/usr/local/var/log/ntnuwifiautologin.log
-  
-  echo `date` "Currently connected to school Wi-Fi, sleeping 3 seconds before continuing"
 
-  sleep 3
+  # Redirect stdout
+  exec &>/tmp/ntnuwifiautologin.log
+
+  notification "ntnu_5g captive portal" "Authentication in process"
 fi
 
-echo `date` "Manipulating route to 140.122.131.1/32"
+set -e
 
-route delete 140.122.131.1/32 1>/dev/null 2>&1
-route add 140.122.131.1/32 172.16.1.254 1>/dev/null 2>&1
+echo `date` "Manipulating route to $DNS_SERVER/32"
 
-echo `date` "Trying to get Firewall Login magic"
+route delete $DNS_SERVER/32 >/dev/null 2>&1 || true
+route add $DNS_SERVER/32 172.18.1.254 >/dev/null
 
-a=$(curl \
-  --silent \
-  --connect-timeout 5 \
-  --max-time 10 \
-  --retry 5 \
-  --retry-delay 1 \
-  --retry-max-time 40 \
-  --insecure \
-  'https://140.122.131.1:1003/login?')
-re='magic" value="([0-9a-zA-Z]+)"'
+# curl -k "https://140.122.66.1:1003/logout?"
 
-if [[ $a =~ $re ]]; then
-  magic=${BASH_REMATCH[1]}
-else
+CAPTIVE_RESOLVED_IP=$(dig @$DNS_SERVER +short captive.apple.com | tail -1)
+
+route delete $CAPTIVE_RESOLVED_IP/32 >/dev/null 2>&1 || true
+route add $CAPTIVE_RESOLVED_IP/32 172.18.1.254 >/dev/null
+
+CAPTIVE_RESPONSE=$(
+  curl \
+    --connect-timeout 5 \
+    --location \
+    --max-time 10 \
+    --retry 15 \
+    --retry-delay 2 \
+    --retry-max-time 40 \
+    --silent \
+    --resolve captive.apple.com:80:$CAPTIVE_RESOLVED_IP \
+    'http://captive.apple.com'
+)
+
+if echo $CAPTIVE_RESPONSE | pcregrep '<BODY>Success<\/BODY>' >/dev/null; then
+  echo `date` "Internet is up"
+  exit 0
+fi
+
+echo `date` "Internet is unreachable. Retrieving captive portal."
+
+if ! echo $CAPTIVE_RESPONSE | pcregrep 'window\.location="https:\/\/(.*?)"' >/dev/null; then
+  echo `date` "Could not parse response from captive portal:"
+  echo $CAPTIVE_RESPONSE
   exit 1
 fi
 
-echo `date` "Firewall Login magic: $magic"
-echo `date` "Sending login request"
+CAPTIVE_URL=$(echo $CAPTIVE_RESPONSE | pcregrep -o1 'window\.location="https:\/\/(.*?)"')
+CAPTIVE_HOST=$(echo $CAPTIVE_URL | pcregrep -o1 '^(.*?)\/')
+CAPTIVE_HOST_FQDN=$(echo $CAPTIVE_HOST | pcregrep -o1 '(.*?):')
+CAPTIVE_MAGIC=$(echo $CAPTIVE_URL | pcregrep -o1 'fgtauth\?(.*?)$')
+CAPTIVE_IP=$(dig @$DNS_SERVER +short $CAPTIVE_HOST_FQDN | tail -1)
 
-result=$(curl \
-  --silent \
-  --connect-timeout 5 \
-  --max-time 10 \
-  --retry 5 \
-  --retry-delay 1 \
-  --retry-max-time 40 \
-  --insecure \
-  'https://140.122.131.1:1003/' \
-  -X 'POST' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  -H 'Pragma: no-cache' \
-  -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
-  -H 'Accept-Language: en-us' \
-  -H 'Accept-Encoding: gzip, deflate, br' \
-  -H 'Cache-Control: no-cache' \
-  -H 'Host: wificert2.ntnu.edu.tw:1003' \
-  -H 'Origin: https://wificert2.ntnu.edu.tw:1003' \
-  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Safari/605.1.15' \
-  -H "Referer: https://wificert2.ntnu.edu.tw:1003/fgtauth?$magic" \
-  --data "4Tredir=http%3A%2F%2Fcaptive.apple.com%2F&magic=$magic&username=$username&password=$password")
-re='\/keepalive\?([0-9a-zA-Z]+)";<\/script>'
+route delete $CAPTIVE_IP/32 >/dev/null 2>&1 || true
+route add $CAPTIVE_IP/32 172.18.1.254 >/dev/null
 
-if [[ ! $result =~ $re ]]; then
+# Pinging the URL is required to activate the magic.
+curl -s --resolve $CAPTIVE_HOST:$CAPTIVE_IP https://$CAPTIVE_URL >/dev/null
+
+echo `date` "Firewall login magic is $CAPTIVE_MAGIC. Trying to login to captive portal."
+
+LOGIN_RESPONSE=$(
+  curl "https://$CAPTIVE_HOST/" \
+    --silent \
+    --resolve $CAPTIVE_HOST:$CAPTIVE_IP \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    -H "Origin: https://$CAPTIVE_HOST" \
+    -H 'Accept-Language: en-GB,en;q=0.9' \
+    -H "Host: $CAPTIVE_HOST" \
+    -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15' \
+    -H "Referer: https://$CAPTIVE_URL" \
+    -H 'Accept-Encoding: gzip, deflate, br' \
+    -H 'Connection: keep-alive' \
+    --data "4Tredir=http%3A%2F%2Fcaptive.apple.com%2F&magic=$CAPTIVE_MAGIC&username=$username&password=$password"
+)
+
+if ! echo $LOGIN_RESPONSE | pcregrep -o1 'window\.location="https:\/\/(.*?)\/keepalive\?([0-9a-zA-Z]+)";<\/script>' >/dev/null; then
+  echo `date` "Error occurred"
+  echo $LOGIN_RESPONSE
   exit 1
 fi
 
-keepaliveURL="https://140.122.131.1:1003/keepalive?"${BASH_REMATCH[1]}
-echo `date` "Keepalive URL:" $keepaliveURL
-echo $keepaliveURL > /var/run/ntnuKeepalive
+echo `date` "Testing internet connection"
 
-exit 0
+echo `date` "Public IP is $(curl -sL https://api.birkhoff.me/v2/ip | jq --raw-output '.ip')"
+
+keepaliveURL=$(echo $LOGIN_RESPONSE | pcregrep -o1 'window\.location="(.*?)";<\/script>';)
+echo $keepaliveURL > /tmp/ntnuKeepalive
+echo `date` "Keepalive URL is $(cat /tmp/ntnuKeepalive)"
+
+notification "ntnu_5g captive portal" "Internet is up"
