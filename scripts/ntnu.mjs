@@ -135,8 +135,8 @@ class NTNU {
 
     const body = await courseLogin.text()
     
-    if (body.includes("will open from"))
-      throw new Error(`time window for acadmSecondQuesSL has passed`)
+    // if (body.includes("will open from"))
+    //   throw new Error(`time window for acadmSecondQuesSL has passed`)
     
     if (!body.includes("acadmYt"))
       throw new Error(`loginToAcadmSecondQuesSL failed, remote returned ${body}`)
