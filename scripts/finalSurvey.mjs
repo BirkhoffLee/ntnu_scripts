@@ -20,6 +20,6 @@ const coursesToSurvey = rawCourses.filter(c => c.completeFlag !== 'Y')
 
 console.log(`There are ${coursesToSurvey.length} surveys to fill out`)
 
-for (const course in coursesToSurvey) {
+for (const course of coursesToSurvey) {
   await ntnu.doCourseFinalSurvey(course)
 }
